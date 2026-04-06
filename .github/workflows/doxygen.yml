@@ -36,7 +36,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./html
+          path: ./html        # важно: именно ./html, а не ./
 
       - name: Deploy to GitHub Pages
         id: deployment

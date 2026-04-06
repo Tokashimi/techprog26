@@ -33,8 +33,9 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./html/    # Убедитесь, что в Doxyfile OUTPUT_DIRECTORY = html (или поменяйте здесь)
+          path: ./html   # Убедитесь, что в Doxyfile OUTPUT_DIRECTORY = html (или поменяйте здесь)
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+

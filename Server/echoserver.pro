@@ -1,0 +1,16 @@
+QT -= gui
+QT += network sql
+
+CONFIG += c++11 console
+CONFIG -= app_bundle
+
+SOURCES += \
+    main.cpp \
+    mytcpserver.cpp \
+    clientworker.cpp \
+    database.cpp
+
+HEADERS += \
+    mytcpserver.h \
+    clientworker.h \
+    database.h

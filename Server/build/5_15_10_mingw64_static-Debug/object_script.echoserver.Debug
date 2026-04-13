@@ -1,0 +1,10 @@
+debug/main.o
+debug/mytcpserver.o
+debug/requesthandler.o
+debug/sqlserver.o
+debug/database.o
+debug/commandprocessor.o
+debug/dbclient.o
+debug/echoserver_plugin_import.o
+debug/moc_mytcpserver.o
+debug/moc_sqlserver.o

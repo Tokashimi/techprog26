@@ -1,22 +1,27 @@
 #ifndef MYTCPSERVER_H
 #define MYTCPSERVER_H
 
+#include <QObject>
 #include <QTcpServer>
+#include <QTcpSocket>
+#include <QList>
 #include <QDebug>
 
-// MyTcpServer только принимает входящие соединения.
-// Каждый клиент передаётся в отдельный ClientWorker, который
-// запускается в собственном QThread — истинная параллельная обработка.
-class MyTcpServer : public QTcpServer
+class MyTcpServer : public QObject
 {
     Q_OBJECT
 public:
     explicit MyTcpServer(QObject *parent = nullptr);
-    bool startServer(quint16 port);
+    ~MyTcpServer();
 
-protected:
-    // Переопределяем: здесь создаём поток + воркер для нового клиента
-    void incomingConnection(qintptr socketDescriptor) override;
+public slots:
+    void slotNewConnection();
+    void slotClientDisconnected();
+    void slotServerRead();
+
+private:
+    QTcpServer*        mTcpServer;
+    QList<QTcpSocket*> mClients;
 };
 
-#endif // MYTCPSERVER_H
+#endif

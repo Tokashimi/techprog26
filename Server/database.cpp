@@ -1,97 +1,113 @@
 #include "database.h"
-#include <QMutexLocker>
 
-DataBase& DataBase::instance()
+DataBase* DataBase::p_instance = nullptr;
+
+DataBase* DataBase::getInstance()
 {
-    static DataBase inst;
-    return inst;
+    if (!p_instance)
+        p_instance = new DataBase();
+    return p_instance;
 }
 
-bool DataBase::open()
+bool DataBase::init(const QString& dbPath)
 {
-    QMutexLocker locker(&m_mutex);
+    db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(dbPath);
 
-    if (m_db.isOpen()) return true;
-
-    m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName("server.db");
-
-    if (!m_db.open()) {
-        qDebug() << "Database open error:" << m_db.lastError().text();
+    if (!db.open()) {
+        qDebug() << "Ошибка открытия БД:" << db.lastError().text();
         return false;
     }
 
-    QSqlQuery query(m_db);
-    if (!query.exec("CREATE TABLE IF NOT EXISTS users "
-                    "(username TEXT PRIMARY KEY, password TEXT)")) {
-        qDebug() << "Table creation error:" << query.lastError().text();
+    QSqlQuery query(db);
+    bool ok = query.exec(
+        "CREATE TABLE IF NOT EXISTS Person ("
+        "  login    VARCHAR(40)  NOT NULL PRIMARY KEY,"
+        "  password VARCHAR(128) NOT NULL,"
+        "  socketID VARCHAR(40),"
+        "  task1    INTEGER NOT NULL DEFAULT 0,"
+        "  task2    INTEGER NOT NULL DEFAULT 0,"
+        "  task3    INTEGER NOT NULL DEFAULT 0,"
+        "  task4    INTEGER NOT NULL DEFAULT 0"
+        ")"
+        );
+
+    if (!ok) {
+        qDebug() << "Ошибка создания таблицы:" << query.lastError().text();
         return false;
     }
 
-    qDebug() << "Database opened successfully";
+    query.exec("UPDATE Person SET socketID = NULL WHERE socketID IS NOT NULL");
+    qDebug() << "БД инициализирована:" << dbPath;
     return true;
 }
 
-bool DataBase::registerUser(const QString& username, const QString& password)
+bool DataBase::registerUser(const QString& login, const QString& password)
 {
-    QMutexLocker locker(&m_mutex);
-
-    QSqlQuery query(m_db);
-    query.prepare("INSERT INTO users (username, password) VALUES (:u, :p)");
-    query.bindValue(":u", username);
-    query.bindValue(":p", password);
-
-    if (!query.exec()) {
-        qDebug() << "Register error:" << query.lastError().text();
-        return false;
-    }
-
-    qDebug() << "User registered:" << username;
-    return true;
+    QSqlQuery query(db);
+    query.prepare("INSERT INTO Person (login, password) VALUES (:login, :password)");
+    query.bindValue(":login",    login);
+    query.bindValue(":password", password);
+    return query.exec();
 }
 
-bool DataBase::loginUser(const QString& username, const QString& password)
+bool DataBase::authUser(const QString& login, const QString& password)
 {
-    QMutexLocker locker(&m_mutex);
-
-    QSqlQuery query(m_db);
-    query.prepare("SELECT password FROM users WHERE username = :u");
-    query.bindValue(":u", username);
-
-    if (!query.exec()) {
-        qDebug() << "Login query error:" << query.lastError().text();
-        return false;
-    }
-
-    if (query.next())
-        return query.value(0).toString() == password;
-
-    return false;
-}
-
-QString DataBase::getStats(const QString& username)
-{
-    QMutexLocker locker(&m_mutex);
-
-    QSqlQuery query(m_db);
-    query.prepare("SELECT COUNT(*) FROM users");
+    QSqlQuery query(db);
+    query.prepare("SELECT login FROM Person WHERE login = :login AND password = :password");
+    query.bindValue(":login",    login);
+    query.bindValue(":password", password);
     query.exec();
-
-    int total = 0;
-    if (query.next())
-        total = query.value(0).toInt();
-
-    return QString("STATS: user=%1, total_users=%2").arg(username).arg(total);
+    return query.next();
 }
 
-QString DataBase::getAllUsers()
+bool DataBase::loginExists(const QString& login)
 {
-    QMutexLocker locker(&m_mutex);
+    QSqlQuery query(db);
+    query.prepare("SELECT login FROM Person WHERE login = :login");
+    query.bindValue(":login", login);
+    query.exec();
+    return query.next();
+}
 
-    QSqlQuery query("SELECT username FROM users", m_db);
-    QStringList users;
-    while (query.next())
-        users << query.value(0).toString();
+bool DataBase::updateSocketID(const QString& login, const QString& socketID)
+{
+    QSqlQuery query(db);
+    query.prepare("UPDATE Person SET socketID = :sid WHERE login = :login");
+    query.bindValue(":sid",   socketID);
+    query.bindValue(":login", login);
+    return query.exec();
+}
 
-    return "USERS: " + users.join(", ");
+QString DataBase::getLoginBySocket(const QString& socketID)
+{
+    QSqlQuery query(db);
+    query.prepare("SELECT login FROM Person WHERE socketID = :sid");
+    query.bindValue(":sid", socketID);
+    if (!query.exec() || !query.next()) return "";
+    return query.value(0).toString();
+}
+
+bool DataBase::logoutUser(const QString& login)
+{
+    QSqlQuery query(db);
+    query.prepare("UPDATE Person SET socketID = NULL WHERE login = :login");
+    query.bindValue(":login", login);
+    return query.exec();
+}
+
+QString DataBase::getStatsByLogin(const QString& login)
+{
+    QSqlQuery query(db);
+    query.prepare("SELECT task1, task2, task3, task4 FROM Person WHERE login = :login");
+    query.bindValue(":login", login);
+    if (!query.exec() || !query.next())
+        return "ERROR user not found";
+
+    return QString("STATS %1: task1=%2 task2=%3 task3=%4 task4=%5")
+        .arg(login)
+        .arg(query.value(0).toInt())
+        .arg(query.value(1).toInt())
+        .arg(query.value(2).toInt())
+        .arg(query.value(3).toInt());
 }

@@ -5,28 +5,37 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
-#include <QMutex>
 #include <QDebug>
 
-// DataBase — потокобезопасный синглтон.
-// QMutex защищает все операции с базой данных,
-// так как несколько ClientWorker из разных потоков обращаются сюда одновременно.
 class DataBase
 {
-public:
-    static DataBase& instance();
-
-    bool    open();
-    bool    registerUser(const QString& username, const QString& password);
-    bool    loginUser(const QString& username, const QString& password);
-    QString getStats(const QString& username);
-    QString getAllUsers();
-
 private:
-    DataBase() = default;
+    static DataBase* p_instance;
+    QSqlDatabase db;
 
-    QSqlDatabase m_db;
-    QMutex       m_mutex; // защита от одновременного доступа из нескольких потоков
+    DataBase() {}
+    DataBase(const DataBase&) = delete;
+    DataBase& operator=(const DataBase&) = delete;
+
+    ~DataBase() {
+        if (db.isOpen())
+            db.close();
+    }
+
+public:
+    static DataBase* getInstance();
+
+    bool init(const QString& dbPath = "timp.db");
+
+    bool    registerUser(const QString& login, const QString& password);
+    bool    authUser(const QString& login, const QString& password);
+    bool    loginExists(const QString& login);
+
+    bool    updateSocketID(const QString& login, const QString& socketID);
+    QString getLoginBySocket(const QString& socketID);
+    bool    logoutUser(const QString& login);
+
+    QString getStatsByLogin(const QString& login);
 };
 
 #endif // DATABASE_H

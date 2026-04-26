@@ -52,6 +52,18 @@ QString parsing(const QString& str, const QString& socketID)
         return "OK logged out";
     }
 
+    // Шаг интегрирования h = (b - a) / n
+    // Формат: CALC_H a b n
+    if (cmd == "CALC_H") {
+        if (parts.size() < 3) return "ERROR need: CALC_H a b n";
+        double a = parts[0].toDouble();
+        double b = parts[1].toDouble();
+        int n = parts[2].toInt();
+        if (n <= 0) return "ERROR n must be > 0";
+        double h = (b - a) / n;
+        return "OK h=" + QString::number(h);
+    }
+
     // Заглушки для заданий коллег
     if (cmd == "TASK1") return "TASK1 not implemented yet";
     if (cmd == "TASK2") return "TASK2 not implemented yet";

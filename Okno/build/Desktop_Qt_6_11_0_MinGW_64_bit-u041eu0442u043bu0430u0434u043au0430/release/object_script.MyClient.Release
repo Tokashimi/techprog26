@@ -1,0 +1,15 @@
+release/main.o
+release/singletonclient.o
+release/windowmanager.o
+release/authwidget.o
+release/registerwidget.o
+release/mainmenuwidget.o
+release/taskwidget.o
+release/statswidget.o
+release/moc_singletonclient.o
+release/moc_windowmanager.o
+release/moc_authwidget.o
+release/moc_registerwidget.o
+release/moc_mainmenuwidget.o
+release/moc_taskwidget.o
+release/moc_statswidget.o

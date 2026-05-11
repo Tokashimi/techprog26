@@ -1,32 +1,26 @@
 #include "singletonclient.h"
 #include <QDebug>
 
-// Определение статических членов класса (обязательно в .cpp)
 SingletonClient*   SingletonClient::p_instance = nullptr;
 SingletonDestroyer SingletonClient::destroyer;
 
-// Конструктор - запрос на подключение к серверу
+//запрос на подключение к серверу
 SingletonClient::SingletonClient(QObject* parent) : QObject(parent)
 {
     mTcpSocket = new QTcpSocket(this);
-    mTcpSocket->connectToHost("127.0.0.1", 33333); // подключаемся к серверу
+    mTcpSocket->connectToHost("127.0.0.1", 33333); // подключение
 
-    // Когда пришли данные от сервера - читаем их в slotServerRead
-    connect(mTcpSocket, SIGNAL(readyRead()),
-            this, SLOT(slotServerRead()));
-
-    // Когда сервер отключился - вызываем slotDisconnected
+    // при отключении - выключаем
     connect(mTcpSocket, SIGNAL(disconnected()),
             this, SLOT(slotDisconnected()));
 }
 
-// Деструктор - отключение от сервера
+// Деструктор
 SingletonClient::~SingletonClient()
 {
     mTcpSocket->disconnectFromHost();
 }
 
-// Единственная точка доступа к синглтону
 SingletonClient* SingletonClient::getInstance()
 {
     if (!p_instance)
@@ -37,15 +31,13 @@ SingletonClient* SingletonClient::getInstance()
     return p_instance;
 }
 
-// Отправка сообщения на сервер - функция
-void SingletonClient::send_msg_to_server(QString query)
+// отправка сообщения на сервер
+QString SingletonClient::send_msg_to_server(QString query)
 {
     mTcpSocket->write(query.toUtf8());
-}
 
-// Обработка сообщений от сервера - слот
-void SingletonClient::slotServerRead()
-{
+    mTcpSocket->waitForReadyRead();
+
     QString msg = "";
     while (mTcpSocket->bytesAvailable() > 0)
     {
@@ -53,10 +45,10 @@ void SingletonClient::slotServerRead()
         msg.append(array);
     }
     qDebug() << msg;
-    emit message_from_server(msg);
+    return msg;
 }
 
-// Отключение при отключении сервера
+// отключение при отключении сервера
 void SingletonClient::slotDisconnected()
 {
     qDebug() << "Сервер отключился";

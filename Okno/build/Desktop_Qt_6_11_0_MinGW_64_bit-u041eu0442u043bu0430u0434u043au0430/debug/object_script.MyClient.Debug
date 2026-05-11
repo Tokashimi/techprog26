@@ -1,0 +1,15 @@
+debug/main.o
+debug/singletonclient.o
+debug/windowmanager.o
+debug/authwidget.o
+debug/registerwidget.o
+debug/mainmenuwidget.o
+debug/taskwidget.o
+debug/statswidget.o
+debug/moc_singletonclient.o
+debug/moc_windowmanager.o
+debug/moc_authwidget.o
+debug/moc_registerwidget.o
+debug/moc_mainmenuwidget.o
+debug/moc_taskwidget.o
+debug/moc_statswidget.o

@@ -6,7 +6,7 @@
 
 class SingletonClient;
 
-// Destroyer - автоматически удаляет синглтон при завершении программы
+// destroyer
 class SingletonDestroyer
 {
 private:
@@ -20,28 +20,23 @@ class SingletonClient : public QObject
 {
     Q_OBJECT
 private:
-    static SingletonClient*   p_instance; // единственный экземпляр
-    static SingletonDestroyer destroyer;  // удалит экземпляр при выходе
-    QTcpSocket* mTcpSocket;               // сокет для связи с сервером
+    static SingletonClient*   p_instance;
+    static SingletonDestroyer destroyer;
+    QTcpSocket* mTcpSocket;
 
 protected:
-    explicit SingletonClient(QObject* parent = nullptr); // запрос на подключение - в конструкторе
+    explicit SingletonClient(QObject* parent = nullptr);
     SingletonClient(SingletonClient&) = delete;
     SingletonClient& operator=(SingletonClient&) = delete;
-    ~SingletonClient(); // отключение - в деструкторе
+    ~SingletonClient();
     friend class SingletonDestroyer;
 
 public:
-    static SingletonClient* getInstance(); // единственная точка доступа к объекту
+    static SingletonClient* getInstance(); //единственный способ доступа
 
-    Q_INVOKABLE void send_msg_to_server(QString query); // отправка сообщений на сервер - функция
-    Q_INVOKABLE void send_calc_h(double a, double b, int n); // шаг интегрирования
-
-signals:
-    void message_from_server(QString msg); // сигнал при получении ответа от сервера
+    QString send_msg_to_server(QString query); // отправка сообщений на сервер
 
 private slots:
-    void slotServerRead();   // обработка сообщений от сервера - слот
     void slotDisconnected(); // отключение при отключении сервера
 };
 

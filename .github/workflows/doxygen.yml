@@ -28,7 +28,7 @@ jobs:
         run: sudo apt update && sudo apt install -y doxygen graphviz
 
       - name: Generate Documentation
-        run: doxygen doxygen/Doxyfile
+        run: cd doxygen && doxygen Doxyfile
 
       - name: Create .nojekyll
         run: touch doxygen/html/.nojekyll

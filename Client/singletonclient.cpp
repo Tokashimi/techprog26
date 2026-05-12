@@ -7,7 +7,7 @@ SingletonDestroyer SingletonClient::destroyer;
 SingletonClient::SingletonClient(QObject* parent) : QObject(parent)
 {
     mTcpSocket = new QTcpSocket(this);
-    mTcpSocket->connectToHost("127.0.0.1", 33333);
+    mTcpSocket->connectToHost("172.20.10.2, 33333);
 
     connect(mTcpSocket, SIGNAL(disconnected()),
             this, SLOT(slotDisconnected()));

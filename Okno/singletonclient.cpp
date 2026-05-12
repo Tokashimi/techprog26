@@ -8,7 +8,7 @@ SingletonDestroyer SingletonClient::destroyer;
 SingletonClient::SingletonClient(QObject* parent) : QObject(parent)
 {
     mTcpSocket = new QTcpSocket(this);
-    mTcpSocket->connectToHost("192.168.1.136", 33333);
+    mTcpSocket->connectToHost("172.20.10.2", 33333);
 
     connect(mTcpSocket, SIGNAL(disconnected()),
             this, SLOT(slotDisconnected()));
@@ -37,7 +37,7 @@ bool SingletonClient::isConnected() const
 QString SingletonClient::send_msg_to_server(QString query)
 {
     if (!isConnected()) {
-        mTcpSocket->connectToHost("192.168.1.136", 33333);
+        mTcpSocket->connectToHost("172.20.10.2", 33333);
         if (!mTcpSocket->waitForConnected(3000)) {
             return "ERROR no connection";
         }

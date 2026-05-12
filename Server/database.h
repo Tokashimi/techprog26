@@ -36,6 +36,10 @@ public:
     bool    logoutUser(const QString& login);
 
     QString getStatsByLogin(const QString& login);
+    void updateStats(const QString& login, int task, bool res);
+
+    bool    saveTaskParams(const QString& login, const QString& params);
+    QString getTaskParams(const QString& login);
 };
 
-#endif // DATABASE_H
+#endif

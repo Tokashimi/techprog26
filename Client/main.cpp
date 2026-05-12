@@ -6,7 +6,6 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    // создание синглтона - сразу подключается к серверу
     SingletonClient::getInstance();
 
     std::string msg;

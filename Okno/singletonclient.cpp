@@ -5,11 +5,10 @@
 SingletonClient*   SingletonClient::p_instance = nullptr;
 SingletonDestroyer SingletonClient::destroyer;
 
-// Подключение к серверу при создании
 SingletonClient::SingletonClient(QObject* parent) : QObject(parent)
 {
     mTcpSocket = new QTcpSocket(this);
-    mTcpSocket->connectToHost("127.0.0.1", 33333);
+    mTcpSocket->connectToHost("192.168.1.136", 33333);
 
     connect(mTcpSocket, SIGNAL(disconnected()),
             this, SLOT(slotDisconnected()));
@@ -35,11 +34,10 @@ bool SingletonClient::isConnected() const
     return mTcpSocket->state() == QAbstractSocket::ConnectedState;
 }
 
-// Отправка сообщения и синхронное ожидание ответа
 QString SingletonClient::send_msg_to_server(QString query)
 {
     if (!isConnected()) {
-        mTcpSocket->connectToHost("127.0.0.1", 33333);
+        mTcpSocket->connectToHost("192.168.1.136", 33333);
         if (!mTcpSocket->waitForConnected(3000)) {
             return "ERROR no connection";
         }

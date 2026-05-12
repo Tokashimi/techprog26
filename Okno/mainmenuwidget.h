@@ -34,4 +34,4 @@ private:
     Ui::MainMenuWidget *ui;
 };
 
-#endif // MAINMENUWIDGET_H
+#endif

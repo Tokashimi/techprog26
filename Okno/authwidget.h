@@ -26,4 +26,4 @@ private:
     Ui::AuthWidget *ui;
 };
 
-#endif // AUTHWIDGET_H
+#endif

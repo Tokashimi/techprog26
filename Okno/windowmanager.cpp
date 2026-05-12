@@ -29,7 +29,7 @@ WindowManager::WindowManager(QObject *parent)
 }
 
 bool WindowManager::doLogin(const QString &login, const QString &password,
-                             QString &errorMsg)
+                            QString &errorMsg)
 {
     QString cmd = QString("LOGIN %1 %2").arg(login, hashPassword(password));
     QString response = SingletonClient::getInstance()->send_msg_to_server(cmd);
@@ -43,7 +43,7 @@ bool WindowManager::doLogin(const QString &login, const QString &password,
 }
 
 bool WindowManager::doRegister(const QString &login, const QString &password,
-                                QString &errorMsg)
+                               QString &errorMsg)
 {
     QString cmd = QString("REGISTER %1 %2").arg(login, hashPassword(password));
     QString response = SingletonClient::getInstance()->send_msg_to_server(cmd);
@@ -65,10 +65,12 @@ bool WindowManager::doLogout(QString &errorMsg)
 }
 
 bool WindowManager::doStats(const QString &login,
-                             int &t1, int &t2, int &t3, int &t4)
+                            int &t1, int &t2, int &t3, int &t4)
 {
     QString cmd = QString("STATS %1").arg(login);
     QString response = SingletonClient::getInstance()->send_msg_to_server(cmd);
+
+    qDebug() << "[doStats] ответ сервера:" << response;
     if (!response.startsWith("STATS "))
         return false;
 
@@ -87,6 +89,19 @@ bool WindowManager::doStats(const QString &login,
     t3 = extractInt("task3");
     t4 = extractInt("task4");
     return true;
+}
+
+QString WindowManager::doGetTask(int taskNum)
+{
+    QString cmd = QString("TASK%1").arg(taskNum);
+    return SingletonClient::getInstance()->send_msg_to_server(cmd);
+}
+
+QString WindowManager::doSendAnswer(int taskNum, const QString &answer)
+{
+    Q_UNUSED(taskNum)
+    QString cmd = QString("ANSWER %1").arg(answer);
+    return SingletonClient::getInstance()->send_msg_to_server(cmd);
 }
 
 void WindowManager::showAuth()
@@ -113,13 +128,13 @@ void WindowManager::showAuth()
                             QString err;
                             if (doRegister(login, password, err)) {
                                 QMessageBox::information(m_registerWidget,
-                                    "Регистрация",
-                                    "Регистрация прошла успешно!");
+                                                         "Регистрация",
+                                                         "Регистрация прошла успешно!");
                                 m_registerWidget->hide();
                                 showAuth();
                             } else {
                                 QMessageBox::warning(m_registerWidget,
-                                    "Регистрация", err);
+                                                     "Регистрация", err);
                             }
                         });
 
@@ -152,27 +167,26 @@ void WindowManager::showMenu()
     if (!m_mainMenu) {
         m_mainMenu = new MainMenuWidget;
 
-        auto openTask = [this](const QString &text) {
+        auto openTask = [this](int taskNum) {
+            m_currentTask = taskNum;
+            QString taskText = doGetTask(taskNum);
+
             m_mainMenu->hide();
             if (!m_taskWidget) createTaskWidget();
-            m_taskWidget->setTaskText(text);
+            m_taskWidget->setTaskText(taskText);
             m_taskWidget->show();
             m_taskWidget->raise();
             m_taskWidget->activateWindow();
         };
 
-        connect(m_mainMenu, &MainMenuWidget::task1Clicked, this, [this, openTask]() {
-            openTask("Задание 1\n\nЗаглушечка");
-        });
-        connect(m_mainMenu, &MainMenuWidget::task2Clicked, this, [this, openTask]() {
-            openTask("Задание 2\n\nЗаглушечка");
-        });
-        connect(m_mainMenu, &MainMenuWidget::task3Clicked, this, [this, openTask]() {
-            openTask("Задание 3\n\nЗаглушечка");
-        });
-        connect(m_mainMenu, &MainMenuWidget::task4Clicked, this, [this, openTask]() {
-            openTask("Задание 4\n\nЗаглушечка");
-        });
+        connect(m_mainMenu, &MainMenuWidget::task1Clicked,
+                this, [this, openTask]() { openTask(1); });
+        connect(m_mainMenu, &MainMenuWidget::task2Clicked,
+                this, [this, openTask]() { openTask(2); });
+        connect(m_mainMenu, &MainMenuWidget::task3Clicked,
+                this, [this, openTask]() { openTask(3); });
+        connect(m_mainMenu, &MainMenuWidget::task4Clicked,
+                this, [this, openTask]() { openTask(4); });
 
         connect(m_mainMenu, &MainMenuWidget::statsClicked, this, [this]() {
             int t1 = 0, t2 = 0, t3 = 0, t4 = 0;
@@ -192,7 +206,7 @@ void WindowManager::showMenu()
                 m_statsWidget->activateWindow();
             } else {
                 QMessageBox::warning(m_mainMenu, "Статистика",
-                    "Не удалось получить статистику");
+                                     "Не удалось получить статистику");
             }
         });
 
@@ -223,9 +237,16 @@ void WindowManager::createTaskWidget()
 
     connect(m_taskWidget, &TaskWidget::answerSubmitted,
             this, [this](const QString &answer) {
-                QMessageBox::information(m_taskWidget, "Ответ",
-                    QString("Ваш ответ: %1\n"
-                            "(Проверка ответов будет добавлена позже)").arg(answer));
+                QString response = doSendAnswer(m_currentTask, answer);
+                if (response == "CORRECT") {
+                    QMessageBox::information(m_taskWidget, "Результат",
+                                             "Правильно!");
+                } else if (response == "INCORRECT") {
+                    QMessageBox::warning(m_taskWidget, "Результат",
+                                         "Неправильно!");
+                } else {
+                    QMessageBox::warning(m_taskWidget, "Результат", response);
+                }
             });
 
     connect(m_taskWidget, &TaskWidget::backToMenuRequested,

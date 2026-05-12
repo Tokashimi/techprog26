@@ -24,4 +24,4 @@ private:
     Ui::RegisterWidget *ui;
 };
 
-#endif // REGISTERWIDGET_H
+#endif

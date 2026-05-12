@@ -12,7 +12,6 @@ public:
     explicit TaskWidget(QWidget *parent = nullptr);
     ~TaskWidget();
 
-    // Показать задание: задаём текст условия
     void setTaskText(const QString &text);
 
 signals:
@@ -27,4 +26,4 @@ private:
     Ui::TaskWidget *ui;
 };
 
-#endif // TASKWIDGET_H
+#endif

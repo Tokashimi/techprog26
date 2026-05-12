@@ -4,18 +4,15 @@
 SingletonClient*   SingletonClient::p_instance = nullptr;
 SingletonDestroyer SingletonClient::destroyer;
 
-//запрос на подключение к серверу
 SingletonClient::SingletonClient(QObject* parent) : QObject(parent)
 {
     mTcpSocket = new QTcpSocket(this);
-    mTcpSocket->connectToHost("127.0.0.1", 33333); // подключение
+    mTcpSocket->connectToHost("127.0.0.1", 33333);
 
-    // при отключении - выключаем
     connect(mTcpSocket, SIGNAL(disconnected()),
             this, SLOT(slotDisconnected()));
 }
 
-// Деструктор
 SingletonClient::~SingletonClient()
 {
     mTcpSocket->disconnectFromHost();
@@ -31,7 +28,6 @@ SingletonClient* SingletonClient::getInstance()
     return p_instance;
 }
 
-// отправка сообщения на сервер
 QString SingletonClient::send_msg_to_server(QString query)
 {
     mTcpSocket->write(query.toUtf8());
@@ -48,7 +44,6 @@ QString SingletonClient::send_msg_to_server(QString query)
     return msg;
 }
 
-// отключение при отключении сервера
 void SingletonClient::slotDisconnected()
 {
     qDebug() << "Сервер отключился";

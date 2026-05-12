@@ -6,7 +6,6 @@
 
 class SingletonClient;
 
-// destroyer
 class SingletonDestroyer
 {
 private:
@@ -32,12 +31,12 @@ protected:
     friend class SingletonDestroyer;
 
 public:
-    static SingletonClient* getInstance(); //единственный способ доступа
+    static SingletonClient* getInstance();
 
-    QString send_msg_to_server(QString query); // отправка сообщений на сервер
+    QString send_msg_to_server(QString query);
 
 private slots:
-    void slotDisconnected(); // отключение при отключении сервера
+    void slotDisconnected();
 };
 
-#endif // SINGLETONCLIENT_H
+#endif

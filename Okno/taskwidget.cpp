@@ -9,7 +9,6 @@ TaskWidget::TaskWidget(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("Задание");
 
-    // Enter в поле → отправить
     connect(ui->lineAnswer, &QLineEdit::returnPressed,
             ui->btnSend, &QPushButton::click);
 }

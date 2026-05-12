@@ -6,7 +6,6 @@
 
 class SingletonClient;
 
-// Destroyer — автоматически удаляет синглтон при завершении программы
 class SingletonDestroyer
 {
 private:
@@ -34,7 +33,6 @@ protected:
 public:
     static SingletonClient* getInstance();
 
-    // Отправить команду на сервер и получить ответ синхронно
     QString send_msg_to_server(QString query);
 
     bool isConnected() const;
@@ -43,5 +41,5 @@ private slots:
     void slotDisconnected();
 };
 
-#endif // SINGLETONCLIENT_H
+#endif
 

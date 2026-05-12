@@ -24,4 +24,4 @@ private:
     Ui::StatsWidget *ui;
 };
 
-#endif // STATSWIDGET_H
+#endif
